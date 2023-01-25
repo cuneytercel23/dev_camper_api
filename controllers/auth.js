@@ -91,13 +91,33 @@ exports.updateDetails =  asyncHandler(async (req,res,next) => {
         runValidators :true,
     }) 
 
+   sendTokenResponse(user,200,res) // aşşada yaptığım fonk, easy
+})
+
+
+//@desc   Update Password
+//@route PUT api/v1/auth/updatepassword
+//@access Private
+//* logged in user via token , profil sayfası için olması lazım sanırsam
+exports.updatePassword =  asyncHandler(async (req,res,next) => {
+
+    const user = await User.findById(req.user.id).select('+password') //* passworudü de ekle.
+    
+    //check current password
+    if(!(await user.matchPassword(req.body.currentPassword))) { //modeldeki matchpassword fonksiyonunu kullandık, easy 
+        return next (new ErrorResponse('Password is incorrect',401));
+    }
+
+    user.password = req.body.newPassword;
+    await user.save();
+
+
     res.status(200).json({
         success: true,
         data: user, 
 
     })
 })
-
 
 //@desc   Forgot password
 //@route POST api/v1/auth/forgotpassword
