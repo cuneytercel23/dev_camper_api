@@ -8,6 +8,14 @@ const errorHandler = require('./middlewares/error');
 const fileupload = require('express-fileupload');
 const cookieParser = require('cookie-parser');
 
+//apisecurity-muhtemelen burası pek aklında kalmayacak ama sadece indirip app.use()'a koyuyoruz adamlar halletmiş :D
+const mongoSanitize = require('express-mongo-sanitize'); //$gt ile token çözenleri engelledi
+const helmet = require('helmet');
+const xss = require('xss-clean'); // html verileri yada script ile, falan yazılınca onları engellemek amaç yani password kutucuğu hacker'a gidebilir, amaç onu engellemek.
+const rateLimit = require('express-rate-limit');
+const hpp = require('hpp'); 
+const cors = require('cors');
+
 
 
 //*load env vars
@@ -20,6 +28,8 @@ connectDB();
 const bootcamps = require('./routes/bootcamps');
 const courses = require('./routes/courses');
 const auth = require('./routes/auth');
+const user = require('./routes/user');
+const review = require('./routes/review');
 
 
 const app = express();
@@ -36,14 +46,43 @@ app.use(morgan('dev')); //* middleware'de loggerjs oluşturdum. Onun yaptığı 
 //* File uploading with express-fileupload
 app.use(fileupload())
 
+// Apı Security 
+
+//data sanitize - data dezenfekte etme, sadece import edip middleware olarak çalıştırıyoruz.
+app.use(mongoSanitize());
+
+//set security headers
+app.use(helmet());
+
+//prevent xss attacks
+app.use(xss());
+
+// rate limiting
+const limiter = rateLimit({
+    windowMs : 10 * 60 * 1000, // 10 mins
+    max : 100
+})
+
+app.use(limiter);
+
+//prevent http param polution
+app.use(hpp());
+
+//enable cors
+app.use(cors()); 
+// buraya kadar api security idi
+
+
 //* Set static folder 
 app.use(express.static(path.join(__dirname, 'public')));
-
 
 //*Mount routers
 app.use('/api/v1/bootcamps' , bootcamps);
 app.use('/api/v1/courses' , courses);
 app.use('/api/v1/auth' , auth);
+app.use('/api/v1/review' , review);
+app.use('/api/v1/user' , user);
+
 
 app.use(errorHandler); //* bunun routerlardan önce olması lazım
 

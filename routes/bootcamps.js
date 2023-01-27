@@ -2,6 +2,7 @@ const { getBootcamps, getBootcamp, updateBootcamp ,createBootcamp,deleteBootcamp
 
 //*include other resource routers
 const courseRouter = require('./courses');
+const reviewRouter = require('./review')
 
 const router = require('express').Router();
 
@@ -25,7 +26,8 @@ router.route('/:id')
 
 
 //*re-route into other resource routers * bootcamp routes'dan courseRoute'una erişmece
-router.use('/:bootcampId/courses', courseRouter) //* /api/v1/bootcamps/1231321/courses gelirse -> courseRouter'a pasla ve orada hem bu route'ları çalıştırabilir hem de kendilerine özeller çalışabiliyor zaten. 
+router.use('/:bootcampId/courses', courseRouter); //* /api/v1/bootcamps/1231321/courses gelirse -> courseRouter'a pasla ve orada hem bu route'ları çalıştırabilir hem de kendilerine özeller çalışabiliyor zaten.
+router.use('/:bootcampId/reviews', reviewRouter); 
 
 
 
